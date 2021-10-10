@@ -4,15 +4,19 @@ type AuthPayload struct {
 	Password string `json:"password"`
 }
 
-type AuthResponse struct {
-	LeaseId       string      `json:"lease_id"`
-	Renewable     bool        `json:"renewable"`
-	LeaseDuration int         `json:"lease_duration"`
-	Data          interface{} `json:"data"`
-	Errors        []string    `json:"errors"`
-	Auth          struct {
-		ClientToken string            `json:"client_token"`
-		Policies    []string          `json:"policies"`
-		Metadata    map[string]string `json:"metadata"`
+type Response struct {
+	RequestId     string   `json:"request_id"`
+	LeaseId       string   `json:"lease_id"`
+	Renewable     bool     `json:"renewable"`
+	LeaseDuration int      `json:"lease_duration"`
+	Errors        []string `json:"errors"`
+	Data          struct {
+		Data     map[string]interface{} `json:"data"`
+		Metadata map[string]interface{} `json:"metadata"`
+	} `json:"data"`
+	Auth struct {
+		ClientToken string                 `json:"client_token"`
+		Policies    []string               `json:"policies"`
+		Metadata    map[string]interface{} `json:"metadata"`
 	} `json:"auth"`
 }

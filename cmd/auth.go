@@ -11,13 +11,12 @@ import (
 
 var authCmd = &cobra.Command{
 	Use:   "auth",
-	Short: "Authenticates users to Vault",
-	Long: `
-Authenticates users to Vault using the provided arguments. 
+	Short: "Authenticates users to Auth",
+	Long: `Authenticates users to Auth using the provided arguments. 
 Method using: 'userpass'. The path of 'userpass' should be 'userpass/'  
 	`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := cli.ArgumentsRequired(cmd, []string{"address", "username", "password"}); err != nil {
+		if err := cli.ArgumentsRequired(cmd, []string{"username", "password"}); err != nil {
 			return err
 		}
 
@@ -25,7 +24,7 @@ Method using: 'userpass'. The path of 'userpass' should be 'userpass/'
 		username := cmd.Flag("username").Value.String()
 		password := cmd.Flag("password").Value.String()
 
-		auth := vault.New(address, username, password)
+		auth := vault.NewAuth(address, username, password)
 		if err := auth.Login(); err != nil {
 			return err
 		}
@@ -36,8 +35,8 @@ Method using: 'userpass'. The path of 'userpass' should be 'userpass/'
 
 func init() {
 	flags := authCmd.Flags()
-	flags.StringP("address", "a", env.GetEnvAsStringOrFallback("VAULT_ADDR", "https://127.0.0.1:8200"), "Address of the Vault server. This can also be specified via the VAULT_ADDR environment variable.")
-	flags.StringP("username", "u", env.GetEnvAsStringOrFallback("VAULT_USER", ""), "The username to authenticate with Vault server. This can also be specified via the VAULT_USER environment variables.")
+	flags.StringP("address", "a", env.GetEnvAsStringOrFallback("VAULT_ADDR", "https://127.0.0.1:8200"), "Address of the Auth server. This can also be specified via the VAULT_ADDR environment variable.")
+	flags.StringP("username", "u", env.GetEnvAsStringOrFallback("VAULT_USER", ""), "The username to authenticate with Auth server. This can also be specified via the VAULT_USER environment variables.")
 	flags.StringP("password", "p", env.GetEnvAsStringOrFallback("VAULT_PASSWORD", ""), "The user's password. This can also be specified via the VAULT_PASSWORD environment variables.")
 	rootCmd.AddCommand(authCmd)
 }

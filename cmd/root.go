@@ -8,8 +8,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "vault-converter",
 	Short: "Convert to file from Vault",
-	Long: `
-Convert to file from Vault. Support multiple file format 
+	Long: `Convert to file from Vault. Support multiple file format 
 like '.tfvars', '.env'
 `}
 

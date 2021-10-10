@@ -28,8 +28,8 @@ func Cat(path string) (string, error) {
 
 func Write(content []byte, output string) error {
 	// Make sure output path exist
-	dir := path.Dir(output)
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
+	if _, err := os.Stat(output); os.IsNotExist(err) {
+		dir := path.Dir(output)
 		// Create directory with Mode 0755
 		if err = os.MkdirAll(dir, 0755); err != nil {
 			return errors.Wrap(err, "Write: Mkdir failed")
@@ -47,6 +47,17 @@ func Write(content []byte, output string) error {
 		return errors.Wrap(err, "Write: Write content failed")
 	}
 
+	return nil
+}
+
+func MkdirP(input string) error {
+	if _, err := os.Stat(input); os.IsNotExist(err) {
+		dir := path.Dir(input)
+		// Create directory with Mode 0755
+		if err = os.MkdirAll(dir, 0755); err != nil {
+			return errors.Wrap(err, "Write: Mkdir failed")
+		}
+	}
 	return nil
 }
 
