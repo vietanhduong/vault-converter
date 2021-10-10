@@ -10,6 +10,7 @@ type Converter interface {
 	Convert(src map[string]interface{}, output string) error
 }
 
+// NewConverter get a converter by input format
 func NewConverter(format string) (Converter, error) {
 	switch strings.ToLower(format) {
 	case "tfvars":

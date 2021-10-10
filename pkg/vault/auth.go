@@ -24,12 +24,17 @@ func NewAuth(vaultAddr, username, password string) *Auth {
 	}
 }
 
+// Login authenticate the input user to Vault server.
+// In the current version, the auth pass of 'userpass'
+// has been fixed with 'userpass/'
 func (a *Auth) Login() error {
 	loginURL := fmt.Sprintf("%s/v1/auth/userpass/login/%s", a.VaultAddr, a.Username)
+
 	payload, err := json.Marshal(&AuthPayload{Password: a.password})
 	if err != nil {
 		return errors.Wrap(err, "Auth: Marshal auth payload failed")
 	}
+
 	req, err := http.NewRequest(http.MethodPost, loginURL, bytes.NewBuffer(payload))
 	if err != nil {
 		return errors.Wrap(err, "Auth: Init request to login failed")
@@ -51,6 +56,8 @@ func (a *Auth) Login() error {
 		return errors.New(fmt.Sprintf("[%d] Auth: %s", resp.StatusCode, strings.Title(ret.Errors[0])))
 	}
 
+	// To reduce the number of variables passed during program execution.
+	// After successful login, user's token will be saved at a fixed path (like the way Vault is using).
 	if err = os.Write([]byte(ret.Auth.ClientToken), DefaultTokenPath); err != nil {
 		return errors.Wrap(err, "Login: Write token to file failed")
 	}

@@ -20,11 +20,15 @@ type Vault struct {
 func New(vaultAddr, secretPath string) (*Vault, error) {
 	token, err := os.Cat(DefaultTokenPath)
 	if err != nil || util.IsNullOrEmpty(token) {
+		if err == nil {
+			err = errors.New("Vault: Unauthorized")
+		}
 		return nil, err
 	}
 	return &Vault{Address: vaultAddr, SecretPath: secretPath, Token: token}, nil
 }
 
+// Read read specified secret path and return a map
 func (v *Vault) Read() (map[string]interface{}, error) {
 	secretURL := util.JoinURL(fmt.Sprintf("%s/v1", v.Address), v.SecretPath)
 

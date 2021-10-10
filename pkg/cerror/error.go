@@ -1,5 +1,6 @@
 package cerror
 
+// DefaultErrorMsg Generate default error message
 func DefaultErrorMsg(httpCode int) string {
 	switch httpCode {
 	case 400:

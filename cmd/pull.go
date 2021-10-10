@@ -12,6 +12,7 @@ var convertCmd = &cobra.Command{
 	Use:   "pull SECRET_PATH",
 	Short: "Pull secrets from Vault and convert to file",
 	Long: `Pull secrets from Vault with specified secret path and convert to file.
+SECRET_PATH should be a absolute path at Vault and the values should be in JSON format.
 Supports the following formats: .tfvars (Terraform variables)
 	`,
 	RunE: func(cmd *cobra.Command, args []string) error {
