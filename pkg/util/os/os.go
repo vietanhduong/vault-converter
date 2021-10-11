@@ -4,26 +4,28 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/vietanhduong/vault-converter/pkg/util/output"
+	"github.com/vietanhduong/vault-converter/pkg/util/util"
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 )
 
-func Cat(path string) (string, error) {
+func Cat(path string) ([]byte, error) {
 	file, err := os.Stat(path)
 	if err != nil {
-		return "", errors.Wrap(err, "Cat file error")
+		return nil, errors.Wrap(err, "Cat file error")
 	}
 	if file.IsDir() {
-		return "", errors.New(fmt.Sprintf("%s: Path is a directory", path))
+		return nil, errors.New(fmt.Sprintf("%s: Path is a directory", path))
 	}
 
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return "", errors.Wrap(err, "Cat: Read file error")
+		return nil, errors.Wrap(err, "Cat: Read file error")
 	}
 
-	return string(b), nil
+	return b, nil
 }
 
 func Write(content []byte, output string) error {
@@ -37,7 +39,8 @@ func Write(content []byte, output string) error {
 	}
 
 	// Write to file (No append)
-	f, err := os.OpenFile(output, os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(output, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+
 	if err != nil {
 		return errors.Wrap(err, "Write: OpenFile failed")
 	}
@@ -67,4 +70,12 @@ func HomeDir() string {
 		output.Printf("WARN: $HOME is not defined")
 	}
 	return home
+}
+
+func GetExtension(path string) string {
+	ext := filepath.Ext(path)
+	if util.IsNullOrEmpty(ext) {
+		return ""
+	}
+	return ext
 }

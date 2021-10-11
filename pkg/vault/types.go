@@ -20,3 +20,9 @@ type Response struct {
 		Metadata    map[string]interface{} `json:"metadata"`
 	} `json:"auth"`
 }
+
+type SecretPayload struct {
+	Options map[string]interface{} `json:"options"`
+	Cas     *int                   `json:"cas"`
+	Data    map[string]interface{} `json:"data"`
+}

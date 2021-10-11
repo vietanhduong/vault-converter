@@ -1,16 +1,17 @@
-package converter
+package pull
 
 import (
 	"fmt"
 	"github.com/pkg/errors"
 	"strings"
 )
-
+// Converter interface. (PULL)
+// Support converting from JSON (Vault) to specified format.
 type Converter interface {
 	Convert(src map[string]interface{}, output string) error
 }
 
-// NewConverter get a converter by input format
+// NewConverter get a converter base on input format
 func NewConverter(format string) (Converter, error) {
 	switch strings.ToLower(format) {
 	case "tfvars":
