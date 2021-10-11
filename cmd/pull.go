@@ -5,6 +5,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/vietanhduong/vault-converter/pkg/converter"
 	"github.com/vietanhduong/vault-converter/pkg/util/env"
+	"github.com/vietanhduong/vault-converter/pkg/util/os"
+	"github.com/vietanhduong/vault-converter/pkg/util/util"
 	"github.com/vietanhduong/vault-converter/pkg/vault"
 )
 
@@ -24,12 +26,18 @@ Supports the following formats: .tfvars (Terraform variables)
 		format := cmd.Flag("format").Value.String()
 		secretPath := args[0]
 
-		v, err := vault.New(address, secretPath)
+		token, err := os.Cat(vault.DefaultTokenPath)
 		if err != nil {
 			return err
 		}
 
-		values, err := v.Read()
+		if util.IsNullOrEmpty(token) {
+			return errors.New("Vault: Unauthorized")
+		}
+
+		v := vault.New(address, token)
+
+		values, err := v.Read(secretPath)
 		if err != nil {
 			return err
 		}

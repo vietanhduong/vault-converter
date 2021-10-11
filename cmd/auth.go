@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/vietanhduong/vault-converter/pkg/util/cli"
 	"github.com/vietanhduong/vault-converter/pkg/util/env"
+	"github.com/vietanhduong/vault-converter/pkg/util/os"
 	"github.com/vietanhduong/vault-converter/pkg/util/output"
 	"github.com/vietanhduong/vault-converter/pkg/vault"
 )
@@ -25,9 +26,17 @@ Method using: 'userpass'. The path of 'userpass' should be 'userpass/'
 		password := cmd.Flag("password").Value.String()
 
 		auth := vault.NewAuth(address, username, password)
-		if err := auth.Login(); err != nil {
+		clientToken, err := auth.Login()
+		if err != nil {
 			return err
 		}
+
+		// To reduce the number of variables passed during program execution.
+		// After successful login, user's token will be saved at a fixed path (like the way Vault is using).
+		if err = os.Write([]byte(clientToken), vault.DefaultTokenPath); err != nil {
+			return err
+		}
+
 		output.Printf(fmt.Sprintf("Success! You are now authenticated.\nYou do NOT need to run '%s %s' again.", rootCmd.Use, cmd.Use))
 		return nil
 	},
