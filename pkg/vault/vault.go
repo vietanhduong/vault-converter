@@ -6,18 +6,30 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/vietanhduong/vault-converter/pkg/cerror"
+	"github.com/vietanhduong/vault-converter/pkg/util/os"
 	"github.com/vietanhduong/vault-converter/pkg/util/util"
 	"net/http"
 	"strings"
 )
 
+var DefaultTokenPath = os.HomeDir() + "/.vault_converter/token"
+
+type HttpClient interface {
+	Do(r *http.Request) (*http.Response, error)
+}
+
 type Vault struct {
 	Address string
 	Token   string
+	client  HttpClient
 }
 
 func New(vaultAddr, clientToken string) *Vault {
-	return &Vault{Address: vaultAddr, Token: clientToken}
+	return &Vault{
+		Address: vaultAddr,
+		Token:   clientToken,
+		client:  &http.Client{},
+	}
 }
 
 // Read read specified secret path and return a map
@@ -30,8 +42,8 @@ func (v *Vault) Read(secretPath string) (map[string]interface{}, error) {
 	}
 
 	req.Header.Set("X-Vault-Token", v.Token)
-	client := &http.Client{}
-	resp, err := client.Do(req)
+
+	resp, err := v.client.Do(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "Vault: Request to read secret failed")
 	}
@@ -56,10 +68,7 @@ func (v *Vault) Write(secretPath string, values map[string]interface{}) error {
 	secretURL := util.JoinURL(fmt.Sprintf("%s/v1", v.Address), secretPath)
 	payloadObject := &SecretPayload{Data: values}
 
-	payload, err := json.Marshal(payloadObject)
-	if err != nil {
-		return errors.Wrap(err, "Vault: Marshal payload object failed")
-	}
+	payload, _:= json.Marshal(payloadObject)
 
 	req, err := http.NewRequest(http.MethodPost, secretURL, bytes.NewBuffer(payload))
 	if err != nil {
@@ -69,8 +78,7 @@ func (v *Vault) Write(secretPath string, values map[string]interface{}) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Vault-Token", v.Token)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := v.client.Do(req)
 	if err != nil {
 		return errors.Wrap(err, "Vault: Request write secret failed")
 	}

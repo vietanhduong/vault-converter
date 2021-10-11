@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/vietanhduong/vault-converter/pkg/cerror"
 	"net/http"
 	"strings"
 )
@@ -13,6 +14,7 @@ type Auth struct {
 	VaultAddr string
 	Username  string
 	password  string
+	client    HttpClient
 }
 
 func NewAuth(vaultAddr, username, password string) *Auth {
@@ -20,6 +22,7 @@ func NewAuth(vaultAddr, username, password string) *Auth {
 		VaultAddr: vaultAddr,
 		Username:  username,
 		password:  password,
+		client:    &http.Client{},
 	}
 }
 
@@ -29,10 +32,7 @@ func NewAuth(vaultAddr, username, password string) *Auth {
 func (a *Auth) Login() (string, error) {
 	loginURL := fmt.Sprintf("%s/v1/auth/userpass/login/%s", a.VaultAddr, a.Username)
 
-	payload, err := json.Marshal(&AuthPayload{Password: a.password})
-	if err != nil {
-		return "", errors.Wrap(err, "Auth: Marshal auth payload failed")
-	}
+	payload, _ := json.Marshal(&AuthPayload{Password: a.password})
 
 	req, err := http.NewRequest(http.MethodPost, loginURL, bytes.NewBuffer(payload))
 	if err != nil {
@@ -40,8 +40,7 @@ func (a *Auth) Login() (string, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return "", errors.Wrap(err, "Auth: Request login failed")
 	}
@@ -52,7 +51,11 @@ func (a *Auth) Login() (string, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return "", errors.New(fmt.Sprintf("[%d] Auth: %s", resp.StatusCode, strings.Title(ret.Errors[0])))
+		msg := cerror.DefaultErrorMsg(resp.StatusCode)
+		if len(ret.Errors) > 0 {
+			msg = ret.Errors[0]
+		}
+		return "", errors.New(fmt.Sprintf("[%d] Auth: %s", resp.StatusCode, strings.Title(msg)))
 	}
 
 	return ret.Auth.ClientToken, nil
