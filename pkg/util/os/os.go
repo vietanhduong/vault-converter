@@ -22,7 +22,7 @@ func Cat(path string) ([]byte, error) {
 
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, errors.Wrap(err, "Cat: Read file error")
+		return nil, errors.Wrap(err, "Cat file error")
 	}
 
 	return b, nil
