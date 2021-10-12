@@ -30,12 +30,21 @@ func Cat(path string) ([]byte, error) {
 
 func Write(content []byte, output string) error {
 	// Make sure output path exist
-	if _, err := os.Stat(output); os.IsNotExist(err) {
+	p, err := os.Stat(output)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return errors.Wrap(err, "Write: Stats file failed")
+		}
+
 		dir := path.Dir(output)
 		// Create directory with Mode 0755
 		if err = os.MkdirAll(dir, 0755); err != nil {
 			return errors.Wrap(err, "Write: Mkdir failed")
 		}
+	}
+
+	if p != nil && p.IsDir() {
+		return errors.New(fmt.Sprintf("Write: %s is a directory", output))
 	}
 
 	// Write to file (No append)

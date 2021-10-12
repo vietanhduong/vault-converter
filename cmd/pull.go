@@ -35,7 +35,7 @@ Supports the following formats: "tfvars"
 			return errors.New("Vault: Unauthorized")
 		}
 
-		v := vault.New(address, string(token))
+		v := vault.New(address, util.Trim(string(token)))
 
 		values, err := v.Read(secretPath)
 		if err != nil {

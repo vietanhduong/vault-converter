@@ -1,6 +1,7 @@
 package os
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
@@ -42,5 +43,30 @@ func TestCat(t *testing.T) {
 }
 
 func TestWrite(t *testing.T) {
+	var content = "test_content"
+	tmpDir := os.TempDir()
+	defer os.Remove(tmpDir)
 
+	t.Run("With success case: write content without return error", func(tc *testing.T) {
+		p := tmpDir + "/test_write1/test.txt"
+		err := Write([]byte(content), p)
+		assert.NoError(tc, err)
+		c, err := Cat(p)
+		assert.NoError(tc, err)
+		assert.Equal(tc, content, string(c))
+	})
+
+	t.Run("With error case: failure with output is a dir", func(tc *testing.T) {
+		err := Write([]byte(content), tmpDir)
+		assert.Error(tc, err)
+		assert.Contains(tc, err.Error(), fmt.Sprintf("Write: %s is a directory", tmpDir))
+	})
+
+	t.Run("With error case: failure with can not open file", func(tc *testing.T) {
+		f, _ := ioutil.TempFile(tmpDir, "test")
+		_ = os.Chmod(f.Name(), 0200)
+		err := Write([]byte(content), f.Name())
+		assert.Error(tc, err)
+		assert.Contains(tc, err.Error(), "Write: OpenFile failed")
+	})
 }
