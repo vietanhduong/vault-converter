@@ -70,3 +70,32 @@ func TestWrite(t *testing.T) {
 		assert.Contains(tc, err.Error(), "Write: OpenFile failed")
 	})
 }
+
+func TestHomeDir(t *testing.T) {
+	t.Run("With success case: return home dir", func(tc *testing.T) {
+		h := "/usr"
+		_ = os.Setenv("HOME", h)
+
+		home := HomeDir()
+		assert.Equal(tc, h, home)
+	})
+
+	t.Run("With failed case: return empty home path", func(tc *testing.T) {
+		_ = os.Setenv("HOME", "")
+		home := HomeDir()
+		assert.Equal(tc, "", home)
+	})
+}
+
+func TestGetExtension(t *testing.T) {
+	t.Run("With success case: return extension", func(tc *testing.T) {
+		p := "test.txt"
+		expected := ".txt"
+		a := GetExtension(p)
+		assert.Equal(tc, expected, a)
+	})
+
+	t.Run("With failed case: return empty", func(tc *testing.T) {
+		assert.Equal(tc, GetExtension(""), "")
+	})
+}
