@@ -13,7 +13,7 @@ import (
 var authCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "Authenticates users to Vault",
-	Long: `Authenticates users to Auth using the provided arguments. 
+	Long: `Authenticates users to Vault using the provided arguments. 
 Method using: 'userpass'. The path of 'userpass' should be 'userpass/'  
 	`,
 	RunE: func(cmd *cobra.Command, args []string) error {
