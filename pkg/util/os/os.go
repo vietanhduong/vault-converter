@@ -76,7 +76,7 @@ func MkdirP(input string) error {
 func HomeDir() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		output.Printf("WARN: $HOME is not defined")
+		output.Printf("WARN: $HOME is not defined\n")
 	}
 	return home
 }

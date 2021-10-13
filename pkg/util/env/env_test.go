@@ -14,7 +14,7 @@ func TestGetEnvAsStringOrFallback(t *testing.T) {
 	})
 
 	t.Run("With success case: return blank value", func(tc *testing.T) {
-		value := GetEnvAsStringOrFallback("TEST_GET_ENV", "")
+		value := GetEnvAsStringOrFallback("TEST_GET", "")
 		assert.Equal(tc, "", value)
 	})
 }

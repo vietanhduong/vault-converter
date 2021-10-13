@@ -6,8 +6,10 @@ import (
 	"github.com/vietanhduong/vault-converter/pkg/pull"
 	"github.com/vietanhduong/vault-converter/pkg/util/env"
 	"github.com/vietanhduong/vault-converter/pkg/util/os"
+	out "github.com/vietanhduong/vault-converter/pkg/util/output"
 	"github.com/vietanhduong/vault-converter/pkg/util/util"
 	"github.com/vietanhduong/vault-converter/pkg/vault"
+	"path/filepath"
 )
 
 var pullCmd = &cobra.Command{
@@ -47,7 +49,11 @@ Supports the following formats: "tfvars"
 			return err
 		}
 
-		return puller.Convert(values, output)
+		if err = puller.Convert(values, output); err != nil {
+			absPath, _ := filepath.Abs(output)
+			out.Printf("Generated output at %s", absPath)
+		}
+		return nil
 	},
 }
 
