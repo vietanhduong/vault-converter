@@ -6,10 +6,11 @@
 **Support converting Vault Secrets to different formats.**
 
 `vault-converter` is a tool designed to synchronize variables from local to Vault and vice versa.
+
 Currently, `vault-converter` only supports files with the extension `tfvars`.
 
 `vault-converter` uses Vault authentication method as **userpass** with fixed path **userpass/**. But you still can
-authorize with **token** method by creat a file contain client token at **"$HOME/.vault_converter/token"**.
+authenticate with **token** method by create a file contain client token at **"$HOME/.vault_converter/token"**.
 
 Secret Engine supports **Key/Value Version 2** *(kv2)*.
 
