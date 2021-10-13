@@ -17,7 +17,7 @@ var authCmd = &cobra.Command{
 Method using: 'userpass'. The path of 'userpass' should be 'userpass/'  
 	`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := cli.ArgumentsRequired(cmd, []string{"username", "password"}); err != nil {
+		if err := cli.FlagsRequired(cmd, []string{"username", "password"}); err != nil {
 			return err
 		}
 

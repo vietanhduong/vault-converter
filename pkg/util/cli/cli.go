@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func ArgumentsRequired(cmd *cobra.Command, requiredArgs []string) error {
+func FlagsRequired(cmd *cobra.Command, requiredFlags []string) error {
 	flags := make(map[string]string)
 	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
 		flags[flag.Name] = flag.Value.String()
@@ -17,7 +17,7 @@ func ArgumentsRequired(cmd *cobra.Command, requiredArgs []string) error {
 
 	var missing []string
 
-	for _, arg := range requiredArgs {
+	for _, arg := range requiredFlags {
 		v, found := flags[arg]
 		if !found || util.IsNullOrEmpty(v) {
 			missing = append(missing, fmt.Sprintf("\"%s\"", arg))
