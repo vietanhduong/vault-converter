@@ -1,0 +1,39 @@
+project_name: vault-converter
+builds:
+  - main: main.go
+    binary: vault-converter
+    env:
+      - CGO_ENABLED=0
+    goarch:
+      - amd64
+      - arm
+    goos:
+      - linux
+      - darwin
+    ldflags:
+      - >-
+        -X github.com/vietanhduong/vault-converter/cmd.Version={{ .Tag }}
+        -X github.com/vietanhduong/vault-converter/cmd.GitCommit={{ .Commit }}
+        -X github.com/vietanhduong/vault-converter/cmd.BuildDate={{ .Date }}
+archives:
+  - files:
+      - LICENSE
+      - README.md
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+brews:
+  - tap:
+      owner: helm
+      name: homebrew-tap
+    commit_author:
+      name: vietanhduong
+      email: vietanhduong@users.noreply.github.com
+    folder: Formula
+    homepage: https://github.com/vietanhduong/vault-converter/
+    description: Support converting Vault Secrets to different formats
+    install: |
+      bin.install "vault-converter"
+    test: |
+      system "#{bin}/vault-converter --version"

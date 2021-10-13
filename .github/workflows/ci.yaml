@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.16.x"
+
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Install tools
+        run: ./setup.sh
+
+      - name: Lint
+        shell: bash
+        run: |
+          shopt -s globstar; shellcheck **/*.sh
+          golangci-lint run --timeout 3m
+
+      - name: Test
+        run: go test ./... -race
