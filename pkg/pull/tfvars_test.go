@@ -28,11 +28,12 @@ func TestConvert(t *testing.T) {
 			},
 			"bool_val": false,
 		}
-		err := tf.Convert(raw, dir+"/out.tfvars")
+		outputPath := dir + "/out.tfvars"
+		defer os.Remove(outputPath)
+		err := tf.Convert(raw, outputPath)
 		assert.NoError(tc, err)
 
-		content, _ := osext.Cat(dir + "out.tfvars")
-
+		content, _ := osext.Cat(outputPath)
 		assert.Contains(tc, string(content), `test = "this is a str"`)
 		assert.Contains(tc, string(content), `bool_val = false`)
 		assert.Contains(tc, string(content), `arr = [{

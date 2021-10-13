@@ -49,6 +49,7 @@ func TestWrite(t *testing.T) {
 
 	t.Run("With success case: write content without return error", func(tc *testing.T) {
 		p := tmpDir + "/test_write1/test.txt"
+		defer os.Remove(p)
 		err := Write([]byte(content), p)
 		assert.NoError(tc, err)
 		c, err := Cat(p)
