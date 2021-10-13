@@ -12,7 +12,7 @@ import (
 
 var authCmd = &cobra.Command{
 	Use:   "auth",
-	Short: "Authenticates users to Auth",
+	Short: "Authenticates users to Vault",
 	Long: `Authenticates users to Auth using the provided arguments. 
 Method using: 'userpass'. The path of 'userpass' should be 'userpass/'  
 	`,

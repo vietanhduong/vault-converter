@@ -2,3 +2,4 @@
 .idea
 **/app
 *.tfvars
+**/vault-converter
