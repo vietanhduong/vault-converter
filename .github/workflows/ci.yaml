@@ -26,14 +26,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Install tools
-        run: ./setup.sh
-
       - name: Lint
-        shell: bash
-        run: |
-          shopt -s globstar; shellcheck **/*.sh
-          golangci-lint run --timeout 3m
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.39.0
+          args: --timeout 3m
 
       - name: Test
         run: go test ./... -race

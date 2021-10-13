@@ -29,10 +29,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Install tools
-        run: ./setup.sh
-
-
       - name: Test
         run: go test ./... -race
 
@@ -46,6 +42,10 @@ jobs:
           git push origin "refs/tags/$tag"
 
       - name: Release
-        run: goreleaser release --rm-dist
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --rm-dist
         env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
