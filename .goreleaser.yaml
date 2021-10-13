@@ -23,17 +23,3 @@ checksum:
   name_template: 'checksums.txt'
 snapshot:
   name_template: "{{ .Tag }}-next"
-brews:
-  - tap:
-      owner: vietanhduong
-      name: homebrew-tap
-    commit_author:
-      name: vietanhduong
-      email: vietanhduong@users.noreply.github.com
-    folder: Formula
-    homepage: https://github.com/vietanhduong/vault-converter/
-    description: Support converting Vault Secrets to different formats
-    install: |
-      bin.install "vault-converter"
-    test: |
-      system "#{bin}/vault-converter --version"
