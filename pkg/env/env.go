@@ -28,13 +28,14 @@ func (e *Env) ToENV(src map[string]interface{}) []byte {
 	for key, value := range src {
 		var raw string
 
-		switch value.(type) {
+		switch t := value.(type) {
 		case []int:
 			raw = strings.Trim(strings.Replace(fmt.Sprint(value), " ", ",", -1), "[]")
 		case []string:
 			raw = strings.Join(value.([]string), ",")
 		case map[string]interface{}:
 			raw = ""
+			fmt.Println("WARN: This type ", t, " will be ignore")
 		default:
 			raw = fmt.Sprintf("%v", value)
 		}
