@@ -38,7 +38,7 @@ func (e *Env) ToENV(src map[string]interface{}) []byte {
 		default:
 			raw = fmt.Sprintf("%v", value)
 		}
-		lines = append(lines, fmt.Sprintf("%s=%s", key, raw))
+		lines = append(lines, fmt.Sprintf("export %s=%s", key, raw))
 	}
 
 	content := strings.Join(lines, "\n")
