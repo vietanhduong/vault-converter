@@ -20,8 +20,8 @@ func TestEnv_ToENV(t *testing.T) {
 
 		expected := map[string]bool{
 			"export TEST=TEST": true,
-			"export DATA=1,2,3": true,
-			"export STR=a,b,c": true,
+			"export DATA=": true,
+			"export STR=": true,
 			"export EMPTY=": true,
 			"export FLOAT=0.23": true,
 			"export STR_WITH_SPACE=\"string with space\"": true,

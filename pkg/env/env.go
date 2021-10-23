@@ -17,12 +17,10 @@ func NewEnv() *Env {
 // ToENV convert a map (JSON structure) to string
 // (concatenated by \n)
 // This function only support convert simple format
-// i.e: string, number, integer array, string array
-// If the value is a type of map[string]interface{}
+// i.e: string, number
+// another types will be ignored
 // it will be converted to empty string.
 // The key and value will be concatenated by equal sign.
-// If the value have array format. The elements in value
-// will be concatenated by comma.
 func (e *Env) ToENV(src map[string]interface{}) []byte {
 	var lines []string
 
@@ -30,15 +28,15 @@ func (e *Env) ToENV(src map[string]interface{}) []byte {
 		var raw string
 
 		switch t := value.(type) {
-		case []int:
-			raw = strings.Trim(strings.Replace(fmt.Sprint(value), " ", ",", -1), "[]")
-		case []string:
-			raw = join(value.([]string), ",")
-		case map[string]interface{}:
+		case int:
+			raw = addQuote(fmt.Sprintf("%v", value))
+		case float64:
+			raw = addQuote(fmt.Sprintf("%v", value))
+		case string:
+			raw = addQuote(fmt.Sprintf("%v", value))
+		default:
 			raw = ""
 			fmt.Println("WARN: This type", t, "will be ignored")
-		default:
-			raw = addQuote(fmt.Sprintf("%v", value))
 		}
 		lines = append(lines, fmt.Sprintf("export %s=%s", key, raw))
 	}
@@ -47,18 +45,9 @@ func (e *Env) ToENV(src map[string]interface{}) []byte {
 	return []byte(content)
 }
 
-// join string with addQuote
-func join(input []string, sep string) string {
-	var s []string
-	for _, i := range input {
-		s = append(s, addQuote(i))
-	}
-	return strings.Join(s, sep)
-}
-
 // addQuote to input string if it contains special characters
 func addQuote(s string) string {
-	var isValid = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`).MatchString
+	var isValid = regexp.MustCompile(`^[a-zA-Z0-9.,_-]+$`).MatchString
 	if !isValid(s) {
 		s = strconv.Quote(s)
 	}
