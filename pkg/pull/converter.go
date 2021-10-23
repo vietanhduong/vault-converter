@@ -16,6 +16,8 @@ func NewConverter(format string) (Converter, error) {
 	switch strings.ToLower(format) {
 	case "tfvars":
 		return NewTfvars(), nil
+	case "env":
+		return NewEnv(), nil
 	default:
 		return nil, errors.New(fmt.Sprintf("`%s` is not yet supported.", format))
 	}

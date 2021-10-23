@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestConvert(t *testing.T) {
+func TestTfvars_Convert(t *testing.T) {
 	t.Run("With success case: return a map", func(tc *testing.T) {
 		tf := NewTfvars()
 		content, err := tf.Convert([]byte(`name = "test"
