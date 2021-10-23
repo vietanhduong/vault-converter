@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -32,18 +33,36 @@ func (e *Env) ToENV(src map[string]interface{}) []byte {
 		case []int:
 			raw = strings.Trim(strings.Replace(fmt.Sprint(value), " ", ",", -1), "[]")
 		case []string:
-			raw = strings.Join(value.([]string), ",")
+			raw = join(value.([]string), ",")
 		case map[string]interface{}:
 			raw = ""
 			fmt.Println("WARN: This type", t, "will be ignored")
 		default:
-			raw = fmt.Sprintf("%v", value)
+			raw = addQuote(fmt.Sprintf("%v", value))
 		}
 		lines = append(lines, fmt.Sprintf("export %s=%s", key, raw))
 	}
 
 	content := strings.Join(lines, "\n")
 	return []byte(content)
+}
+
+// join string with addQuote
+func join(input []string, sep string) string {
+	var s []string
+	for _, i := range input {
+		s = append(s, addQuote(i))
+	}
+	return strings.Join(s, sep)
+}
+
+// addQuote to input string if it contains special characters
+func addQuote(s string) string {
+	var isValid = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`).MatchString
+	if !isValid(s) {
+		s = strconv.Quote(s)
+	}
+	return s
 }
 
 // ToJSON convert string lines to a map (JSON structure)
@@ -75,8 +94,18 @@ func (e *Env) ToJSON(src []string) (map[string]interface{}, error) {
 			value = strings.Join(v[1:], "=")
 		}
 
-		content[v[0]] = value
+		content[v[0]] = trimQuotes(value)
 	}
 
 	return content, nil
+}
+
+// trimQuotes remove quote from string
+func trimQuotes(s string) string {
+	if len(s) >= 2 {
+		if c := s[len(s)-1]; s[0] == c && (c == '"' || c == '\'') {
+			return s[1 : len(s)-1]
+		}
+	}
+	return s
 }

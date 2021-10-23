@@ -15,9 +15,17 @@ func TestEnv_ToENV(t *testing.T) {
 			"STR":   []string{"a", "b", "c"},
 			"EMPTY": map[string]interface{}{"test": true},
 			"FLOAT": 0.23,
+			"STR_WITH_SPACE": "string with space",
 		}
 
-		expected := map[string]bool{"export TEST=TEST": true, "export DATA=1,2,3": true, "export STR=a,b,c": true, "export EMPTY=": true, "export FLOAT=0.23": true}
+		expected := map[string]bool{
+			"export TEST=TEST": true,
+			"export DATA=1,2,3": true,
+			"export STR=a,b,c": true,
+			"export EMPTY=": true,
+			"export FLOAT=0.23": true,
+			"export STR_WITH_SPACE=\"string with space\"": true,
+		}
 
 		actual := strings.Split(string(e.ToENV(input)), "\n")
 
@@ -37,6 +45,8 @@ func TestEnv_ToJSON(t *testing.T) {
 			"#export PASS=no",
 			"CI=true=test",
 			"T=",
+			"export T1='test data'",
+			"export T2=\"test data\"",
 		}
 
 		expected := map[string]interface{}{
@@ -44,6 +54,8 @@ func TestEnv_ToJSON(t *testing.T) {
 			"DATA": "1,2,3",
 			"CI":   "true=test",
 			"T":    "",
+			"T1":   "test data",
+			"T2":   "test data",
 		}
 
 		content, err := e.ToJSON(input)

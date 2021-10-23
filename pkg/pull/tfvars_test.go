@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestConvert(t *testing.T) {
+func TestTfvars_Convert(t *testing.T) {
 	dir := os.TempDir()
 	defer os.Remove(dir)
 
