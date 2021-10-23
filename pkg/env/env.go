@@ -34,6 +34,8 @@ func (e *Env) ToENV(src map[string]interface{}) []byte {
 			raw = addQuote(fmt.Sprintf("%v", value))
 		case string:
 			raw = addQuote(fmt.Sprintf("%v", value))
+		case bool:
+			raw = addQuote(fmt.Sprintf("%v", value))
 		default:
 			raw = ""
 			fmt.Println("WARN: This type", t, "will be ignored")

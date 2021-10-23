@@ -16,10 +16,12 @@ func TestEnv_ToENV(t *testing.T) {
 			"EMPTY": map[string]interface{}{"test": true},
 			"FLOAT": 0.23,
 			"STR_WITH_SPACE": "string with space",
+			"BOOL": true,
 		}
 
 		expected := map[string]bool{
 			"export TEST=TEST": true,
+			"export BOOL=true": true,
 			"export DATA=": true,
 			"export STR=": true,
 			"export EMPTY=": true,
