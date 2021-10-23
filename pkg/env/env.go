@@ -35,7 +35,7 @@ func (e *Env) ToENV(src map[string]interface{}) []byte {
 			raw = strings.Join(value.([]string), ",")
 		case map[string]interface{}:
 			raw = ""
-			fmt.Println("WARN: This type ", t, " will be ignore")
+			fmt.Println("WARN: This type", t, "will be ignored")
 		default:
 			raw = fmt.Sprintf("%v", value)
 		}
@@ -47,7 +47,7 @@ func (e *Env) ToENV(src map[string]interface{}) []byte {
 }
 
 // ToJSON convert string lines to a map (JSON structure)
-// Each line should be formatted like key=value
+// Each line should be formatted like export key=value or key=value
 // The value can be empty. The key should contain only
 // alphabet, number and underscore.
 // Comment lines will be ignored.
@@ -61,19 +61,21 @@ func (e *Env) ToJSON(src []string) (map[string]interface{}, error) {
 			continue
 		}
 
+		// Remove export
+		line = strings.TrimSpace(strings.TrimPrefix(line, "export"))
+
 		v := strings.Split(line, "=")
 		// Validate key
-		key := strings.TrimSpace(v[0])
-		if !isValid(key) {
-			return nil, errors.New(fmt.Sprintf("Env: Key %s is invalid format", key))
+		if !isValid(v[0]) {
+			return nil, errors.New(fmt.Sprintf("Env: Key %s is invalid format", v[0]))
 		}
 
 		value := ""
 		if len(v) > 1 {
-			value = strings.Join(v[1:], "")
+			value = strings.Join(v[1:], "=")
 		}
 
-		content[key] = value
+		content[v[0]] = value
 	}
 
 	return content, nil

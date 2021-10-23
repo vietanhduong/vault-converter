@@ -1,7 +1,68 @@
 package env
 
-import "testing"
+import (
+	"github.com/stretchr/testify/assert"
+	"strings"
+	"testing"
+)
 
 func TestEnv_ToENV(t *testing.T) {
+	t.Run("With success case: return byte array", func(tc *testing.T) {
+		e := NewEnv()
+		input := map[string]interface{}{
+			"TEST":  "TEST",
+			"DATA":  []int{1, 2, 3},
+			"STR":   []string{"a", "b", "c"},
+			"EMPTY": map[string]interface{}{"test": true},
+			"FLOAT": 0.23,
+		}
 
+		expected := map[string]bool{"export TEST=TEST": true, "export DATA=1,2,3": true, "export STR=a,b,c": true, "export EMPTY=": true, "export FLOAT=0.23": true}
+
+		actual := strings.Split(string(e.ToENV(input)), "\n")
+
+		assert.Equal(tc, len(expected), len(actual))
+		for _, a := range actual {
+			assert.Contains(tc, expected, a)
+		}
+	})
+}
+
+func TestEnv_ToJSON(t *testing.T) {
+	t.Run("With success case: return a map", func(tc *testing.T) {
+		e := NewEnv()
+		input := []string{
+			"export TEST=true",
+			"export DATA=1,2,3",
+			"#export PASS=no",
+			"CI=true=test",
+			"T=",
+		}
+
+		expected := map[string]interface{}{
+			"TEST": "true",
+			"DATA": "1,2,3",
+			"CI":   "true=test",
+			"T":    "",
+		}
+
+		content, err := e.ToJSON(input)
+		assert.NoError(tc, err)
+		assert.Equal(tc, len(expected), len(content))
+
+		for k, v := range expected {
+			assert.Contains(tc, content, k)
+			assert.Equal(tc, v, content[k])
+		}
+	})
+
+	t.Run("With error case: return an error key invalid", func(tc *testing.T) {
+		e := NewEnv()
+		input := []string{
+			"export test = true",
+		}
+		_, err := e.ToJSON(input)
+		assert.Error(tc, err)
+		assert.Contains(tc, err.Error(), "Env: Key test  is invalid format")
+	})
 }
