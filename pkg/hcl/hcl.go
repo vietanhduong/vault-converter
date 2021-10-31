@@ -6,6 +6,7 @@ import (
 	hclv2 "github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/pkg/errors"
 	"github.com/vietanhduong/vault-converter/pkg/util/util"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -26,12 +27,12 @@ func (h *Hcl) ToJSON(src []byte) (map[string]interface{}, error) {
 
 	content, diags := h.parser.ParseHCL(src, util.SHA1(src))
 	if diags.HasErrors() {
-		return nil, diags
+		return nil, errors.New("Invalid expression")
 	}
 
 	vars, diags := parseVarsBody(content.Body)
 	if diags.HasErrors() {
-		return nil, diags
+		return nil, errors.New("Parse attributes form HCL failed")
 	}
 
 	values := make(map[string]interface{})
@@ -88,42 +89,39 @@ func parseVarsBody(body hclv2.Body) (map[string]cty.Value, hclv2.Diagnostics) {
 	return values, diags
 }
 
-// TODO: Move to global function
+// parseCtyValue to interface. Receive a cty.Value and dynamic convert to
+// interface. If the value pass through function had invalid type this
+// function will panic.
 func parseCtyValue(val cty.Value) interface{} {
+	var ret interface{}
 	switch {
 	case !val.IsKnown():
-		panic("cannot produce tokens for unknown value")
-
+		panic("unknown value")
 	case val.IsNull():
-		return nil
-
+		ret = nil
 	case val.Type() == cty.Bool:
-		return val.True()
-
+		ret = val.True()
 	case val.Type() == cty.Number:
-		return val.AsBigFloat()
-
+		ret = val.AsBigFloat()
 	case val.Type() == cty.String:
-		return val.AsString()
-
+		ret = val.AsString()
 	case val.Type().IsListType() || val.Type().IsSetType() || val.Type().IsTupleType():
 		var ls []interface{}
 		for it := val.ElementIterator(); it.Next(); {
 			_, eVal := it.Element()
 			ls = append(ls, parseCtyValue(eVal))
 		}
-		return ls
-
+		ret = ls
 	case val.Type().IsMapType() || val.Type().IsObjectType():
 		m := make(map[string]interface{})
-
 		for it := val.ElementIterator(); it.Next(); {
 			eKey, eVal := it.Element()
 			m[eKey.AsString()] = parseCtyValue(eVal)
 		}
-
-		return m
+		ret = m
 	default:
-		panic(fmt.Sprintf("cannot procude value for %#v", val))
+		panic(fmt.Sprintf("cannot procude value: %#v", val))
 	}
+
+	return ret
 }
