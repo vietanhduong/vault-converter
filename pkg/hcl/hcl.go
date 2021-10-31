@@ -2,10 +2,11 @@ package hcl
 
 import (
 	"encoding/json"
-	hclv1 "github.com/hashicorp/hcl"
+	"fmt"
 	hclv2 "github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/pkg/errors"
 	"github.com/vietanhduong/vault-converter/pkg/util/util"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -23,10 +24,21 @@ func New() *Hcl {
 // ToJSON convert input source to map.
 // src should have HCL format.
 func (h *Hcl) ToJSON(src []byte) (map[string]interface{}, error) {
-	// hcl version 1 is enough for convert HCL to JSON
+
+	content, diags := h.parser.ParseHCL(src, util.SHA1(src))
+	if diags.HasErrors() {
+		return nil, errors.New("Invalid expression")
+	}
+
+	vars, diags := parseVarsBody(content.Body)
+	if diags.HasErrors() {
+		return nil, errors.New("Parse attributes form HCL failed")
+	}
+
 	values := make(map[string]interface{})
-	if err := hclv1.Unmarshal(src, &values); err != nil {
-		return nil, err
+
+	for key, variable := range vars {
+		values[key] = parseCtyValue(variable)
 	}
 	return values, nil
 }
@@ -75,4 +87,41 @@ func parseVarsBody(body hclv2.Body) (map[string]cty.Value, hclv2.Diagnostics) {
 		values[name] = val
 	}
 	return values, diags
+}
+
+// parseCtyValue to interface. Receive a cty.Value and dynamic convert to
+// interface. If the value pass through function had invalid type this
+// function will panic.
+func parseCtyValue(val cty.Value) interface{} {
+	var ret interface{}
+	switch {
+	case !val.IsKnown():
+		panic("unknown value")
+	case val.IsNull():
+		ret = nil
+	case val.Type() == cty.Bool:
+		ret = val.True()
+	case val.Type() == cty.Number:
+		ret = val.AsBigFloat()
+	case val.Type() == cty.String:
+		ret = val.AsString()
+	case val.Type().IsListType() || val.Type().IsSetType() || val.Type().IsTupleType():
+		var ls []interface{}
+		for it := val.ElementIterator(); it.Next(); {
+			_, eVal := it.Element()
+			ls = append(ls, parseCtyValue(eVal))
+		}
+		ret = ls
+	case val.Type().IsMapType() || val.Type().IsObjectType():
+		m := make(map[string]interface{})
+		for it := val.ElementIterator(); it.Next(); {
+			eKey, eVal := it.Element()
+			m[eKey.AsString()] = parseCtyValue(eVal)
+		}
+		ret = m
+	default:
+		panic(fmt.Sprintf("cannot procude value: %#v", val))
+	}
+
+	return ret
 }

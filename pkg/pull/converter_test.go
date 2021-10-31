@@ -6,8 +6,13 @@ import (
 )
 
 func TestNewConverter(t *testing.T) {
-	t.Run("With success case", func(tc *testing.T) {
+	t.Run("With success case: tfvars", func(tc *testing.T) {
 		_, err := NewConverter("tfvars")
+		assert.NoError(tc, err)
+	})
+
+	t.Run("With success case: env", func(tc *testing.T) {
+		_, err := NewConverter("env")
 		assert.NoError(tc, err)
 	})
 
