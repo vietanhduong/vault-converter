@@ -2,7 +2,7 @@ package hcl
 
 import (
 	"encoding/json"
-	hclv1 "github.com/hashicorp/hcl"
+	"fmt"
 	hclv2 "github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -23,10 +23,21 @@ func New() *Hcl {
 // ToJSON convert input source to map.
 // src should have HCL format.
 func (h *Hcl) ToJSON(src []byte) (map[string]interface{}, error) {
-	// hcl version 1 is enough for convert HCL to JSON
+
+	content, diags := h.parser.ParseHCL(src, util.SHA1(src))
+	if diags.HasErrors() {
+		return nil, diags
+	}
+
+	vars, diags := parseVarsBody(content.Body)
+	if diags.HasErrors() {
+		return nil, diags
+	}
+
 	values := make(map[string]interface{})
-	if err := hclv1.Unmarshal(src, &values); err != nil {
-		return nil, err
+
+	for key, variable := range vars {
+		values[key] = parseCtyValue(variable)
 	}
 	return values, nil
 }
@@ -75,4 +86,44 @@ func parseVarsBody(body hclv2.Body) (map[string]cty.Value, hclv2.Diagnostics) {
 		values[name] = val
 	}
 	return values, diags
+}
+
+// TODO: Move to global function
+func parseCtyValue(val cty.Value) interface{} {
+	switch {
+	case !val.IsKnown():
+		panic("cannot produce tokens for unknown value")
+
+	case val.IsNull():
+		return nil
+
+	case val.Type() == cty.Bool:
+		return val.True()
+
+	case val.Type() == cty.Number:
+		return val.AsBigFloat()
+
+	case val.Type() == cty.String:
+		return val.AsString()
+
+	case val.Type().IsListType() || val.Type().IsSetType() || val.Type().IsTupleType():
+		var ls []interface{}
+		for it := val.ElementIterator(); it.Next(); {
+			_, eVal := it.Element()
+			ls = append(ls, parseCtyValue(eVal))
+		}
+		return ls
+
+	case val.Type().IsMapType() || val.Type().IsObjectType():
+		m := make(map[string]interface{})
+
+		for it := val.ElementIterator(); it.Next(); {
+			eKey, eVal := it.Element()
+			m[eKey.AsString()] = parseCtyValue(eVal)
+		}
+
+		return m
+	default:
+		panic(fmt.Sprintf("cannot procude value for %#v", val))
+	}
 }

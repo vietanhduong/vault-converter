@@ -21,17 +21,22 @@ content = "content"
 }
 `))
 		assert.NoError(tc, err)
+		dict := map[string]interface{}{
+			"value":   true,
+			"pass":    true,
+			"content": "content",
+		}
 		expected := map[string]interface{}{
 			"name": "test",
 			"arr":  []interface{}{1, 2, 3},
-			"dict": map[string]interface{}{
-				"value":   true,
-				"pass":    true,
-				"content": "content",
-			},
+			"dict": dict,
 		}
+		actualDict, ok := content["dict"].(map[string]interface{})
+
+		assert.Equal(tc, true, ok)
 		assert.Equal(tc, len(expected), len(content))
 		assert.Equal(tc, len(expected["arr"].([]interface{})), len(content["arr"].([]interface{})))
+		assert.Equal(tc,dict["value"], actualDict["value"])
 	})
 
 	t.Run("With error case: src invalid", func(tc *testing.T) {

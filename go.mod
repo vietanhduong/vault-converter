@@ -3,7 +3,6 @@ module github.com/vietanhduong/vault-converter
 go 1.16
 
 require (
-	github.com/hashicorp/hcl v1.0.0
 	github.com/hashicorp/hcl/v2 v2.10.1
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.2.1
