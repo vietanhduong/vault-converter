@@ -102,7 +102,13 @@ func parseCtyValue(val cty.Value) interface{} {
 	case val.Type() == cty.Bool:
 		ret = val.True()
 	case val.Type() == cty.Number:
-		ret = val.AsBigFloat()
+		tmp := val.AsBigFloat()
+		if tmp.IsInt() {
+			v, _ := tmp.Int64()
+			ret = int(v)
+		} else {
+			ret, _ = tmp.Float64()
+		}
 	case val.Type() == cty.String:
 		ret = val.AsString()
 	case val.Type().IsListType() || val.Type().IsSetType() || val.Type().IsTupleType():

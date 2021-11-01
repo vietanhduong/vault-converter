@@ -28,7 +28,7 @@ content = "1"
 data = 2
 }
 value = "string"
-number = 1
+number = -1
 pass = null
 `
 		values, err := h.ToJSON([]byte(content))
@@ -46,6 +46,8 @@ pass = null
 		advListFirstElement, ok := advList[0].(map[string]interface{})
 		assert.True(tc, ok)
 		assert.True(tc, advListFirstElement["sensitive"].(bool))
+
+		assert.Equal(tc, -1, values["number"].(int))
 	})
 
 	t.Run("With error case: invalid expression", func(tc *testing.T) {
