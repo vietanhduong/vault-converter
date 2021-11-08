@@ -73,10 +73,10 @@ Usage:
   vault-converter auth [flags]
 
 Flags:
-  -a, --address string    Address of the Auth server. This can also be specified via the VAULT_ADDR environment variable. (default "https://dev-vault.knstats.com")
+  -a, --address string    Address of the Vault server. This can also be specified via the VAULT_ADDR environment variable. (default "https://dev-vault.knstats.com")
   -h, --help              help for auth
   -p, --password string   The user's password. This can also be specified via the VAULT_PASSWORD environment variables.
-  -u, --username string   The username to authenticate with Auth server. This can also be specified via the VAULT_USER environment variables.
+  -u, --username string   The username to authenticate with Vault server. This can also be specified via the VAULT_USER environment variables.
 
 Global Flags:
   -v, --version   Print version information and exit. This flag is only available at the global level.
@@ -97,7 +97,7 @@ Usage:
   vault-converter pull SECRET_PATH [flags]
 
 Flags:
-  -a, --address string   Address of the Auth server. This can also be specified via the VAULT_ADDR environment variable. (default "https://dev-vault.knstats.com")
+  -a, --address string   Address of the Vault server. This can also be specified via the VAULT_ADDR environment variable. (default "https://dev-vault.knstats.com")
   -f, --format string    Output format (default "tfvars")
   -h, --help             help for pull
   -o, --output string    Output path. E.g: ~/data/variables.auto.tfvars (default "variables.auto.tfvars")
@@ -124,7 +124,7 @@ Usage:
   vault-converter push SOURCE_FILE SECRET_PATH [flags]
 
 Flags:
-  -a, --address string   Address of the Auth server. This can also be specified via the VAULT_ADDR environment variable. (default "https://dev-vault.knstats.com")
+  -a, --address string   Address of the Vault server. This can also be specified via the VAULT_ADDR environment variable. (default "https://dev-vault.knstats.com")
   -h, --help             help for push
 
 Global Flags:
