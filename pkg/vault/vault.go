@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/pkg/errors"
+
 	"github.com/vietanhduong/vault-converter/pkg/cerror"
 	"github.com/vietanhduong/vault-converter/pkg/util/os"
 	"github.com/vietanhduong/vault-converter/pkg/util/util"
-	"net/http"
-	"strings"
 )
 
 var DefaultTokenPath = os.HomeDir() + "/.vault_converter/token"
@@ -42,6 +44,7 @@ func (v *Vault) Read(secretPath string) (map[string]interface{}, error) {
 	}
 
 	req.Header.Set("X-Vault-Token", v.Token)
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := v.client.Do(req)
 	if err != nil {
