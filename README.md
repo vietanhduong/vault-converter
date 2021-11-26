@@ -7,7 +7,9 @@
 
 `vault-converter` is a tool designed to synchronize variables from local to Vault and vice versa.
 
-Currently, `vault-converter` only supports files with the extension `tfvars`.
+**Supported extensions:**
+* tfvars
+* env
 
 `vault-converter` uses Vault authentication method as **userpass** with fixed path **userpass/**. But you still can
 authenticate with **token** method by create a file contain client token at **"$HOME/.vault_converter/token"**.
