@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+
 	"github.com/vietanhduong/vault-converter/pkg/push"
 	"github.com/vietanhduong/vault-converter/pkg/util/env"
 	"github.com/vietanhduong/vault-converter/pkg/util/os"
@@ -13,10 +14,10 @@ import (
 
 var pushCmd = &cobra.Command{
 	Use:   "push SOURCE_FILE SECRET_PATH",
-	Short: "Parse source file and push to Vault",
-	Long: `Parse source file and push secrets to Vault.
+	Short: "Parse source file and push to vault",
+	Long: `Parse source file and push secrets to vault.
 Based on the extension of SOURCE_FILE to determine the file format. 
-SECRET_PATH should be a absolute path at Vault and the values should 
+SECRET_PATH should be a absolute path at vault and the values should 
 be in JSON format.
 Supports the following formats: "tfvars"
 	`,
@@ -57,7 +58,7 @@ Supports the following formats: "tfvars"
 		}
 
 		if util.IsNullOrEmpty(token) {
-			return errors.New("Vault: Unauthorized")
+			return errors.New("vault: Unauthorized")
 		}
 
 		v := vault.New(address, util.Trim(string(token)))
@@ -72,6 +73,6 @@ Supports the following formats: "tfvars"
 
 func init() {
 	flags := pushCmd.Flags()
-	flags.StringP("address", "a", env.GetEnvAsStringOrFallback("VAULT_ADDR", "https://127.0.0.1:8200"), "Address of the Auth server. This can also be specified via the VAULT_ADDR environment variable.")
+	flags.StringP("address", "a", env.GetEnvAsStringOrFallback("VAULT_ADDR", "https://127.0.0.1:8200"), "addr of the Vault server. This can also be specified via the VAULT_ADDR environment variable.")
 	rootCmd.AddCommand(pushCmd)
 }

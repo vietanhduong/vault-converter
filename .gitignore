@@ -3,3 +3,4 @@
 **/app
 *.tfvars
 **/vault-converter
+.env

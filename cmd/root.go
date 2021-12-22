@@ -1,9 +1,11 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/vietanhduong/vault-converter/pkg/util/output"
 	"os"
+
+	"github.com/spf13/cobra"
+
+	"github.com/vietanhduong/vault-converter/pkg/util/output"
 )
 
 var (
@@ -23,9 +25,10 @@ func showVersion() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "vault-converter",
-	Short: "Convert to file from Vault",
-	Long:  `Convert to file from Vault. Support multiple file format like '.tfvars', '.env'`,
+	Use:          "vault-converter",
+	Short:        "Convert to file from Vault",
+	Long:         `Convert to file from Vault. Support multiple file format like '.tfvars', '.env'`,
+	SilenceUsage: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		version := cmd.Flag("version").Value.String()
 		if version == "true" {

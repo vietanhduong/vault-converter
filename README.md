@@ -8,6 +8,7 @@
 `vault-converter` is a tool designed to synchronize variables from local to Vault and vice versa.
 
 **Supported extensions:**
+
 * tfvars
 * env
 
@@ -131,4 +132,30 @@ Flags:
 
 Global Flags:
   -v, --version   Print version information and exit. This flag is only available at the global level.
+```
+
+### List secret paths from Vault
+
+List all secret paths from Vault. This feature will try to list all secret paths base on user permissions. If input path
+does not specify, it will return all secret.
+
+You can list all secret paths by recursive by using `-r or --recursive` flags.
+
+```console
+$ vault-converter ls --help
+List all secret path in input [SECRET_PATH]. If the input [SECRET_PATH] is empty.
+It will return all secret from 'root'. It will try to get all secret that current user
+can 'read'.
+
+Usage:
+  vault-converter ls [SECRET_PATH] [flags]
+
+Flags:
+  -a, --address string   addr of the Auth server. This can also be specified via the VAULT_ADDR environment variable. (default "https://127.0.0.1:8200")
+  -h, --help             help for ls
+  -r, --recursive        List secret recursive or not.
+
+Global Flags:
+  -v, --version   Print version information and exit. This flag is only available at the global level.
+
 ```

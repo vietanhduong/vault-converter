@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/vietanhduong/vault-converter/pkg/cerror"
 	"net/http"
 	"strings"
+
+	"github.com/pkg/errors"
+
+	"github.com/vietanhduong/vault-converter/pkg/cerror"
 )
 
 type Auth struct {
@@ -26,7 +28,7 @@ func NewAuth(vaultAddr, username, password string) *Auth {
 	}
 }
 
-// Login authenticate the input user to Vault server.
+// Login authenticate the input user to vault server.
 // In the current version, the auth pass of 'userpass'
 // has been fixed with 'userpass/'
 func (a *Auth) Login() (string, error) {
