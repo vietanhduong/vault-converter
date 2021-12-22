@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+
 	"github.com/vietanhduong/vault-converter/pkg/push"
 	"github.com/vietanhduong/vault-converter/pkg/util/env"
 	"github.com/vietanhduong/vault-converter/pkg/util/os"
@@ -72,6 +73,6 @@ Supports the following formats: "tfvars"
 
 func init() {
 	flags := pushCmd.Flags()
-	flags.StringP("address", "a", env.GetEnvAsStringOrFallback("VAULT_ADDR", "https://127.0.0.1:8200"), "addr of the Auth server. This can also be specified via the VAULT_ADDR environment variable.")
+	flags.StringP("address", "a", env.GetEnvAsStringOrFallback("VAULT_ADDR", "https://127.0.0.1:8200"), "addr of the Vault server. This can also be specified via the VAULT_ADDR environment variable.")
 	rootCmd.AddCommand(pushCmd)
 }

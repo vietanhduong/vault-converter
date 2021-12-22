@@ -61,7 +61,7 @@ Supports the following formats: "tfvars"
 
 func init() {
 	flags := pullCmd.Flags()
-	flags.StringP("address", "a", env.GetEnvAsStringOrFallback("VAULT_ADDR", "https://127.0.0.1:8200"), "addr of the Auth server. This can also be specified via the VAULT_ADDR environment variable.")
+	flags.StringP("address", "a", env.GetEnvAsStringOrFallback("VAULT_ADDR", "https://127.0.0.1:8200"), "addr of the Vault server. This can also be specified via the VAULT_ADDR environment variable.")
 	flags.StringP("output", "o", "variables.auto.tfvars", "Output path. E.g: ~/data/variables.auto.tfvars")
 	flags.StringP("format", "f", "tfvars", "Output format")
 	rootCmd.AddCommand(pullCmd)

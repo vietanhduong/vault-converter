@@ -14,7 +14,7 @@ import (
 var lsCmd = &cobra.Command{
 	Use:   "ls [SECRET_PATH]",
 	Short: "List secrets in path",
-	Long: `List all secret in input [SECRET_PATH]. If the input [SECRET_PATH] is empty.
+	Long: `List all secret path in input [SECRET_PATH]. If the input [SECRET_PATH] is empty.
 It will return all secret from 'root'. It will try to get all secret that current user
 can 'read'.
 	`,
@@ -50,7 +50,7 @@ can 'read'.
 
 func init() {
 	flags := lsCmd.Flags()
-	flags.StringP("address", "a", env.GetEnvAsStringOrFallback("VAULT_ADDR", "https://127.0.0.1:8200"), "addr of the Auth server. This can also be specified via the VAULT_ADDR environment variable.")
+	flags.StringP("address", "a", env.GetEnvAsStringOrFallback("VAULT_ADDR", "https://127.0.0.1:8200"), "addr of the Vault server. This can also be specified via the VAULT_ADDR environment variable.")
 	flags.BoolP("recursive", "r", false, "List secret recursive or not.")
 	rootCmd.AddCommand(lsCmd)
 }

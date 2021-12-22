@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
+
 	"github.com/vietanhduong/vault-converter/pkg/util/cli"
 	"github.com/vietanhduong/vault-converter/pkg/util/env"
 	"github.com/vietanhduong/vault-converter/pkg/util/os"
@@ -44,8 +46,8 @@ Method using: 'userpass'. The path of 'userpass' should be 'userpass/'
 
 func init() {
 	flags := authCmd.Flags()
-	flags.StringP("address", "a", env.GetEnvAsStringOrFallback("VAULT_ADDR", "https://127.0.0.1:8200"), "addr of the Auth server. This can also be specified via the VAULT_ADDR environment variable.")
-	flags.StringP("username", "u", env.GetEnvAsStringOrFallback("VAULT_USER", ""), "The username to authenticate with Auth server. This can also be specified via the VAULT_USER environment variables.")
+	flags.StringP("address", "a", env.GetEnvAsStringOrFallback("VAULT_ADDR", "https://127.0.0.1:8200"), "addr of the Vault server. This can also be specified via the VAULT_ADDR environment variable.")
+	flags.StringP("username", "u", env.GetEnvAsStringOrFallback("VAULT_USER", ""), "The username to authenticate with Vault server. This can also be specified via the VAULT_USER environment variables.")
 	flags.StringP("password", "p", env.GetEnvAsStringOrFallback("VAULT_PASSWORD", ""), "The user's password. This can also be specified via the VAULT_PASSWORD environment variables.")
 	rootCmd.AddCommand(authCmd)
 }
