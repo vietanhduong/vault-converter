@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -15,89 +16,185 @@ import (
 )
 
 var DefaultTokenPath = os.HomeDir() + "/.vault_converter/token"
+var SkipWithPaths = map[string]bool{
+	"cubbyhole": true,
+	"identity":  true,
+	"sys":       true,
+}
 
 type HttpClient interface {
 	Do(r *http.Request) (*http.Response, error)
 }
 
-type Vault struct {
-	Address string
-	Token   string
-	client  HttpClient
+type Client interface {
+	Read(secretPath string) (map[string]interface{}, error)
+	Write(secretPath string, values map[string]interface{}) error
+	List(secretPath string) ([]string, error)
 }
 
-func New(vaultAddr, clientToken string) *Vault {
-	return &Vault{
-		Address: vaultAddr,
-		Token:   clientToken,
-		client:  &http.Client{},
+type vault struct {
+	addr   string
+	token  string
+	client HttpClient
+}
+
+func New(vaultAddr, clientToken string) Client {
+	return &vault{
+		addr:   vaultAddr,
+		token:  clientToken,
+		client: &http.Client{},
 	}
 }
 
-// Read read specified secret path and return a map
-func (v *Vault) Read(secretPath string) (map[string]interface{}, error) {
-	secretURL := util.JoinURL(fmt.Sprintf("%s/v1", v.Address), secretPath)
+// Read specified secret path and return a map
+func (v *vault) Read(path string) (map[string]interface{}, error) {
+	secretURL := util.JoinURL(fmt.Sprintf("%s/v1", v.addr), path)
 
-	req, err := http.NewRequest(http.MethodGet, secretURL, nil)
+	resp, err := v.makeRequest(http.MethodGet, secretURL, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "Vault: Init request to read secret failed")
-	}
-
-	req.Header.Set("X-Vault-Token", v.Token)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := v.client.Do(req)
-	if err != nil {
-		return nil, errors.Wrap(err, "Vault: Request to read secret failed")
+		return nil, errors.Wrap(err, "vault: Request to read secret failed")
 	}
 
 	var ret *Response
-	if err = json.NewDecoder(resp.Body).Decode(&ret); err != nil {
-		return nil, errors.Wrap(err, "Vault: Read response body failed")
+	if err = json.Unmarshal(resp.Body, &ret); err != nil {
+		return nil, errors.Wrap(err, "vault: Read response body failed")
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		msg := cerror.DefaultErrorMsg(resp.StatusCode)
-		if len(ret.Errors) > 0 {
-			msg = ret.Errors[0]
-		}
-		return nil, errors.New(fmt.Sprintf("[%d] Vault: %s", resp.StatusCode, strings.Title(msg)))
+	if resp.StatusCode == http.StatusOK {
+		return ret.Data.Data, nil
 	}
 
-	return ret.Data.Data, nil
+	return nil, handleError(resp.StatusCode, ret)
 }
 
-func (v *Vault) Write(secretPath string, values map[string]interface{}) error {
-	secretURL := util.JoinURL(fmt.Sprintf("%s/v1", v.Address), secretPath)
+func (v *vault) Write(path string, values map[string]interface{}) error {
+	secretURL := util.JoinURL(fmt.Sprintf("%s/v1", v.addr), path)
 	payloadObject := &SecretPayload{Data: values}
 
-	payload, _:= json.Marshal(payloadObject)
+	payload, _ := json.Marshal(payloadObject)
 
-	req, err := http.NewRequest(http.MethodPost, secretURL, bytes.NewBuffer(payload))
+	resp, err := v.makeRequest(http.MethodPost, secretURL, payload)
 	if err != nil {
-		return errors.Wrap(err, "Vault: Init request to create secret failed")
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Vault-Token", v.Token)
-
-	resp, err := v.client.Do(req)
-	if err != nil {
-		return errors.Wrap(err, "Vault: Request write secret failed")
+		return errors.Wrap(err, "vault: Request write secret failed")
 	}
 
 	var ret *Response
-	if err = json.NewDecoder(resp.Body).Decode(&ret); err != nil {
-		return errors.Wrap(err, "Vault: Read response body failed")
+	if err = json.Unmarshal(resp.Body, &ret); err != nil {
+		return errors.Wrap(err, "vault: Read response body failed")
 	}
 
-	if resp.StatusCode != 200 {
-		msg := cerror.DefaultErrorMsg(resp.StatusCode)
-		if len(ret.Errors) > 0 {
-			msg = ret.Errors[0]
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	}
+
+	return handleError(resp.StatusCode, ret)
+}
+
+func (v *vault) List(path string) ([]string, error) {
+	var secrets []string
+
+	roots, err := v.FindRoots()
+	if err != nil {
+		return nil, errors.Wrap(err, "vault: List secrets failed")
+	}
+
+	if path == "" {
+		for _, root := range roots {
+			secrets = append(secrets, v.FindSecrets(root, "")...)
 		}
-		return errors.New(fmt.Sprintf("[%d] Vault: %s", resp.StatusCode, strings.Title(msg)))
+
+		return secrets, nil
+	}
+	return nil, nil
+}
+
+func (v *vault) FindRoots() ([]string, error) {
+	url := util.JoinURL(fmt.Sprintf("%s/v1", v.addr), "sys/internal/ui/mounts")
+
+	r, err := v.makeRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	var resp *Response
+	if err = json.Unmarshal(r.Body, &resp); err != nil {
+		return nil, err
+	}
+
+	if r.StatusCode != 200 {
+		return nil, handleError(r.StatusCode, resp)
+	}
+
+	var mounts []string
+	for k := range resp.Data.Secret {
+		path := strings.TrimSuffix(k, "/")
+		if _, ok := SkipWithPaths[path]; ok {
+			continue
+		}
+		mounts = append(mounts, path)
+	}
+
+	return mounts, nil
+}
+
+func (v *vault) FindSecrets(root, path string) []string {
+	url := util.JoinURL(fmt.Sprintf("%s/v1", v.addr), root, "metadata", path)
+	r, err := v.makeRequest("LIST", url, nil)
+	if err != nil {
+		return nil
+	}
+
+	var resp *Response
+	if err = json.Unmarshal(r.Body, &resp); err != nil {
+		return nil
+	}
+
+	if r.StatusCode != http.StatusOK {
+		return nil
+	}
+
+	var secrets []string
+	for _, key := range resp.Data.Keys {
+		secret := strings.TrimSuffix(key, "/")
+		if strings.HasSuffix(key, "/") {
+			secrets = append(secrets, v.FindSecrets(root, util.JoinURL(path, secret))...)
+		} else {
+			secrets = append(secrets, util.JoinURL(root, path, secret))
+		}
+	}
+
+	return secrets
+}
+
+func (v *vault) makeRequest(method, url string, payload []byte) (*HttpResponse, error) {
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-vault-token", v.token)
+
+	resp, err := v.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return &HttpResponse{
+		StatusCode: resp.StatusCode,
+		Body:       body,
+	}, nil
+}
+
+func handleError(statusCode int, resp *Response) error {
+	msg := cerror.DefaultErrorMsg(statusCode)
+	if len(resp.Errors) > 0 {
+		msg = resp.Errors[0]
+	}
+	return errors.New(fmt.Sprintf("[%d] vault: %s", statusCode, strings.Title(msg)))
 }

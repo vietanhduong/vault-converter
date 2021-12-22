@@ -23,10 +23,17 @@ type ResponseAuth struct {
 type ResponseData struct {
 	Data     map[string]interface{} `json:"data"`
 	Metadata map[string]interface{} `json:"metadata"`
+	Secret   map[string]interface{} `json:"secret"`
+	Keys     []string               `json:"keys"`
 }
 
 type SecretPayload struct {
 	Options map[string]interface{} `json:"options"`
 	Cas     *int                   `json:"cas"`
 	Data    map[string]interface{} `json:"data"`
+}
+
+type HttpResponse struct {
+	StatusCode int
+	Body       []byte
 }

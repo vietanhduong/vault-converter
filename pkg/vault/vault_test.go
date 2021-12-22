@@ -3,10 +3,11 @@ package vault
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestVault_Read(t *testing.T) {
@@ -22,7 +23,10 @@ func TestVault_Read(t *testing.T) {
 		}
 		mr, _ := json.Marshal(&Response{Data: &ResponseData{Data: values}})
 
-		v := New(vaultAddr, token)
+		v := &vault{
+			addr:  vaultAddr,
+			token: token,
+		}
 		v.client = &ClientMock{
 			DoFunc: func(request *http.Request) (*http.Response, error) {
 				return &http.Response{
@@ -44,12 +48,16 @@ func TestVault_Read(t *testing.T) {
 		v := New("", token)
 		_, err := v.Read(secretPath)
 		assert.Error(tc, err)
-		assert.Contains(tc, err.Error(), "Vault: Request to read secret failed")
+		assert.Contains(tc, err.Error(), "vault: Request to read secret failed")
 	})
 
 	t.Run("With error case: failure with marshal response", func(tc *testing.T) {
 		var secretPath = "test/data/cluster"
-		v := New(vaultAddr, token)
+		v := &vault{
+			addr:  vaultAddr,
+			token: token,
+		}
+
 		v.client = &ClientMock{
 			DoFunc: func(request *http.Request) (*http.Response, error) {
 				return &http.Response{
@@ -61,13 +69,16 @@ func TestVault_Read(t *testing.T) {
 
 		_, err := v.Read(secretPath)
 		assert.Error(tc, err)
-		assert.Contains(tc, err.Error(), "Vault: Read response body failed")
+		assert.Contains(tc, err.Error(), "vault: Read response body failed")
 	})
 
 	t.Run("With error case: failure with response code ne 200", func(tc *testing.T) {
 		var secretPath = "test/data/cluster"
 		mr, _ := json.Marshal(&Response{Errors: []string{"* Permission denied"}})
-		v := New(vaultAddr, token)
+		v := &vault{
+			addr:  vaultAddr,
+			token: token,
+		}
 		v.client = &ClientMock{
 			DoFunc: func(request *http.Request) (*http.Response, error) {
 				return &http.Response{
@@ -78,7 +89,7 @@ func TestVault_Read(t *testing.T) {
 		}
 		_, err := v.Read(secretPath)
 		assert.Error(tc, err)
-		assert.Contains(tc, err.Error(), "[403] Vault: * Permission Denied")
+		assert.Contains(tc, err.Error(), "[403] vault: * Permission Denied")
 	})
 }
 
@@ -92,7 +103,10 @@ func TestVault_Write(t *testing.T) {
 		var secretPath = "test/data/cluster"
 		mr, _ := json.Marshal(&Response{Data: &ResponseData{}})
 
-		v := New(vaultAddr, token)
+		v := &vault{
+			addr:  vaultAddr,
+			token: token,
+		}
 		v.client = &ClientMock{
 			DoFunc: func(request *http.Request) (*http.Response, error) {
 				return &http.Response{
@@ -112,12 +126,15 @@ func TestVault_Write(t *testing.T) {
 		v := New("", token)
 		err := v.Write(secretPath, map[string]interface{}{})
 		assert.Error(tc, err)
-		assert.Contains(tc, err.Error(), "Vault: Request write secret failed")
+		assert.Contains(tc, err.Error(), "vault: Request write secret failed")
 	})
 
 	t.Run("With error case: failure with marshal response", func(tc *testing.T) {
 		var secretPath = "test/data/cluster"
-		v := New(vaultAddr, token)
+		v := &vault{
+			addr:  vaultAddr,
+			token: token,
+		}
 		v.client = &ClientMock{
 			DoFunc: func(request *http.Request) (*http.Response, error) {
 				return &http.Response{
@@ -129,13 +146,16 @@ func TestVault_Write(t *testing.T) {
 
 		err := v.Write(secretPath, map[string]interface{}{})
 		assert.Error(tc, err)
-		assert.Contains(tc, err.Error(), "Vault: Read response body failed")
+		assert.Contains(tc, err.Error(), "vault: Read response body failed")
 	})
 
 	t.Run("With error case: failure with response code ne 200", func(tc *testing.T) {
 		var secretPath = "test/data/cluster"
 		mr, _ := json.Marshal(&Response{Errors: []string{"* Permission denied"}})
-		v := New(vaultAddr, token)
+		v := &vault{
+			addr:  vaultAddr,
+			token: token,
+		}
 		v.client = &ClientMock{
 			DoFunc: func(request *http.Request) (*http.Response, error) {
 				return &http.Response{
@@ -146,7 +166,7 @@ func TestVault_Write(t *testing.T) {
 		}
 		err := v.Write(secretPath, map[string]interface{}{})
 		assert.Error(tc, err)
-		assert.Contains(tc, err.Error(), "[403] Vault: * Permission Denied")
+		assert.Contains(tc, err.Error(), "[403] vault: * Permission Denied")
 	})
 
 }
