@@ -25,6 +25,7 @@ can 'read'.
 		}
 
 		address := cmd.Flag("address").Value.String()
+		recursive, _ := cmd.Flags().GetBool("recursive")
 
 		token, err := os.Cat(vault.DefaultTokenPath)
 		if err != nil {
@@ -35,7 +36,7 @@ can 'read'.
 			return errors.New("vault: Unauthorized")
 		}
 		v := vault.New(address, util.Trim(string(token)))
-		secrets, err := v.List(secretPath)
+		secrets, err := v.List(secretPath, recursive)
 		if err != nil {
 			return err
 		}
@@ -43,9 +44,6 @@ can 'read'.
 		for _, secret := range secrets {
 			output.Printf("%s\n", secret)
 		}
-
-		output.Printf("---\n")
-		output.Printf("Total number of secret paths: %d\n", len(secrets))
 		return nil
 	},
 }
@@ -53,5 +51,6 @@ can 'read'.
 func init() {
 	flags := lsCmd.Flags()
 	flags.StringP("address", "a", env.GetEnvAsStringOrFallback("VAULT_ADDR", "https://127.0.0.1:8200"), "addr of the Auth server. This can also be specified via the VAULT_ADDR environment variable.")
+	flags.BoolP("recursive", "r", false, "List secret recursive or not.")
 	rootCmd.AddCommand(lsCmd)
 }

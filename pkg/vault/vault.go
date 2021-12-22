@@ -29,7 +29,7 @@ type HttpClient interface {
 type Client interface {
 	Read(secretPath string) (map[string]interface{}, error)
 	Write(secretPath string, values map[string]interface{}) error
-	List(secretPath string) ([]string, error)
+	List(secretPath string, recursive bool) ([]string, error)
 }
 
 type vault struct {
@@ -90,7 +90,7 @@ func (v *vault) Write(path string, values map[string]interface{}) error {
 	return handleError(resp.StatusCode, ret)
 }
 
-func (v *vault) List(path string) ([]string, error) {
+func (v *vault) List(path string, recursive bool) ([]string, error) {
 	var secrets []string
 
 	roots, err := v.FindRoots()
@@ -100,12 +100,24 @@ func (v *vault) List(path string) ([]string, error) {
 
 	if path == "" {
 		for _, root := range roots {
-			secrets = append(secrets, v.FindSecrets(root, "")...)
+			secrets = append(secrets, v.FindSecrets(root, "", recursive)...)
 		}
 
 		return secrets, nil
 	}
-	return nil, nil
+
+	if !isValidPath(roots, path) {
+		return nil, fmt.Errorf("vault: Path '%s' no longer exist", path)
+	}
+
+	folders := strings.Split(strings.ToLower(path), "/")
+	root := folders[0]
+	var p string
+	if len(folders) > 1 {
+		p = strings.Join(folders[1:], "/")
+	}
+
+	return v.FindSecrets(root, p, recursive), nil
 }
 
 func (v *vault) FindRoots() ([]string, error) {
@@ -137,7 +149,7 @@ func (v *vault) FindRoots() ([]string, error) {
 	return mounts, nil
 }
 
-func (v *vault) FindSecrets(root, path string) []string {
+func (v *vault) FindSecrets(root, path string, recursive bool) []string {
 	url := util.JoinURL(fmt.Sprintf("%s/v1", v.addr), root, "metadata", path)
 	r, err := v.makeRequest("LIST", url, nil)
 	if err != nil {
@@ -156,10 +168,12 @@ func (v *vault) FindSecrets(root, path string) []string {
 	var secrets []string
 	for _, key := range resp.Data.Keys {
 		secret := strings.TrimSuffix(key, "/")
-		if strings.HasSuffix(key, "/") {
-			secrets = append(secrets, v.FindSecrets(root, util.JoinURL(path, secret))...)
-		} else {
+		if !strings.HasSuffix(key, "/") {
 			secrets = append(secrets, util.JoinURL(root, path, secret))
+			continue
+		}
+		if recursive {
+			secrets = append(secrets, v.FindSecrets(root, util.JoinURL(path, secret), recursive)...)
 		}
 	}
 
@@ -197,4 +211,14 @@ func handleError(statusCode int, resp *Response) error {
 		msg = resp.Errors[0]
 	}
 	return errors.New(fmt.Sprintf("[%d] vault: %s", statusCode, strings.Title(msg)))
+}
+
+func isValidPath(roots []string, path string) bool {
+	folders := strings.Split(strings.ToLower(path), "/")
+	for _, root := range roots {
+		if root == folders[0] {
+			return true
+		}
+	}
+	return false
 }
