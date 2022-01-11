@@ -1,10 +1,12 @@
 package pull
 
 import (
-	"github.com/stretchr/testify/assert"
-	osext "github.com/vietanhduong/vault-converter/pkg/util/os"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	osext "github.com/vietanhduong/vault-converter/pkg/util/os"
 )
 
 func TestEnv_Convert(t *testing.T) {
@@ -33,7 +35,7 @@ func TestEnv_Convert(t *testing.T) {
 		assert.NoError(tc, err)
 
 		content, _ := osext.Cat(outputPath)
-		assert.Contains(tc, string(content), `export test="this is a str"`)
+		assert.Contains(tc, string(content), `export test='this is a str'`)
 		assert.Contains(tc, string(content), `export bool_val=false`)
 		assert.Contains(tc, string(content), `export arr=`)
 	})

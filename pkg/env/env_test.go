@@ -1,32 +1,33 @@
 package env
 
 import (
-	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEnv_ToENV(t *testing.T) {
 	t.Run("With success case: return byte array", func(tc *testing.T) {
 		e := NewEnv()
 		input := map[string]interface{}{
-			"TEST":  "TEST",
-			"DATA":  []int{1, 2, 3},
-			"STR":   []string{"a", "b", "c"},
-			"EMPTY": map[string]interface{}{"test": true},
-			"FLOAT": 0.23,
+			"TEST":           "TEST",
+			"DATA":           []int{1, 2, 3},
+			"STR":            []string{"a", "b", "c"},
+			"EMPTY":          map[string]interface{}{"test": true},
+			"FLOAT":          0.23,
 			"STR_WITH_SPACE": "string with space",
-			"BOOL": true,
+			"BOOL":           true,
 		}
 
 		expected := map[string]bool{
-			"export TEST=TEST": true,
-			"export BOOL=true": true,
-			"export DATA=": true,
-			"export STR=": true,
-			"export EMPTY=": true,
+			"export TEST=TEST":  true,
+			"export BOOL=true":  true,
+			"export DATA=":      true,
+			"export STR=":       true,
+			"export EMPTY=":     true,
 			"export FLOAT=0.23": true,
-			"export STR_WITH_SPACE=\"string with space\"": true,
+			"export STR_WITH_SPACE='string with space'": true,
 		}
 
 		actual := strings.Split(string(e.ToENV(input)), "\n")

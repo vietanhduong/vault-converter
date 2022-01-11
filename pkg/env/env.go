@@ -2,10 +2,11 @@ package env
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type Env struct{}
@@ -50,8 +51,11 @@ func (e *Env) ToENV(src map[string]interface{}) []byte {
 // addQuote to input string if it contains special characters
 func addQuote(s string) string {
 	var isValid = regexp.MustCompile(`^[a-zA-Z0-9.,_-]+$`).MatchString
+	var replaceQuote = regexp.MustCompile(`^"|"$`)
+
 	if !isValid(s) {
-		s = strconv.Quote(s)
+		s = strings.ReplaceAll(strconv.Quote(s), "\\\"", "\"")
+		s = replaceQuote.ReplaceAllString(s, "'")
 	}
 	return s
 }
