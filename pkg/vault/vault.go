@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -15,7 +16,7 @@ import (
 	"github.com/vietanhduong/vault-converter/pkg/util/util"
 )
 
-var DefaultTokenPath = os.HomeDir() + "/.vault_converter/token"
+var DefaultTokenPath = path.Join(os.HomeDir(), "/.vault-token")
 var SkipWithPaths = map[string]bool{
 	"cubbyhole": true,
 	"identity":  true,

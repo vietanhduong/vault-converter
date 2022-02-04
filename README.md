@@ -13,7 +13,7 @@
 * env
 
 `vault-converter` uses Vault authentication method as **userpass** with fixed path **userpass/**. But you still can
-authenticate with **token** method by create a file contain client token at **"$HOME/.vault_converter/token"**.
+authenticate with **token** method by create a file contain client token at **"$HOME/.vault-token"**.
 
 Secret Engine supports **Key/Value Version 2** *(kv2)*.
 
