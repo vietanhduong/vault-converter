@@ -31,6 +31,8 @@ type Client interface {
 	Read(secretPath string) (map[string]interface{}, error)
 	Write(secretPath string, values map[string]interface{}) error
 	List(secretPath string, recursive bool) ([]string, error)
+	FindRoots() ([]string, error)
+	FindSecrets(root, path string, recursive bool) []string
 }
 
 type vault struct {
